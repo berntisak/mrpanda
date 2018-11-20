@@ -1,0 +1,58 @@
+
+Businessman from New York - control overview
+
+1. Stutter start: Either attackdetection or manual button
+
+2. Stutter pause: Not stopping playback, but toggle silencing output on and off
+
+3. Reverse: Toggle reverse playback of buffer on and off
+
+4. Stutter Window Size: Pot/fader control 
+What should be max and minimum? Easier to get similarbehaviour if we use same buffer length 
+
+5. Stutter speed: Pot/fader control with option of going through different quantisation scales
+
+6. Speed coarse: Pot/fader - a speed multiplier for coarse control of stutter speed 
+
+7. Speed/quantisation scales: Button to step through different scales (chromatic, harmonic etc.)
+
+8. Random speed
+    8.1 - Speed (at 0, select new rand. values for each new stutter)
+    8.2 - On/off - toggle random speed on and off
+
+9. Random window size
+    9.1 - Speed (at 0, select new rand. values for each new stutter)
+    9.2 - On/off - toggle random speed on and off
+
+10. Random sequence -> True random: Pot/fader 
+    A repeating random sequence on one end to non-repeating random on the other end. Will make gradual changes 
+    in between
+
+11. Transpose - static argument for when running several instances and you want them transposed in relation@
+    to each other
+
+12. Volume output: Pot/fader 
+
+
+TODO/Future ideas:
+
+- Get rid of clicks on playback
+
+- Implement backwards + forwards stutter for more freezelike effects
+
+- Envelopes on playback windows for smoother repition - more freezelike
+
+- Overlapping playbacks? For freeze/granular effects
+
+- Beat detection for quantizing window sizes
+
+- Adding more adaptive behaviour - envelope follower for controlling for instance speed etc.
+
+- Should we consider other FX on the output or input? Like filtering, compression or distortion? Could also just be done outside the effect.
+
+
+
+
+
+
+
