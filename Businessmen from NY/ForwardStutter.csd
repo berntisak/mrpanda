@@ -21,24 +21,55 @@ instr 10
     outs aL+aR,aR+aL
 endin
 
+
+opcode ducking, a, aak
+
+    ainput, andx, kducktime xin
+
+    kenv init 1
+    kidx = 0
+
+    while (kidx < ksmps) do
+        kval = andx[kidx]
+        if (kval > (1-kducktime)) then
+            kenv = ((1 - kval) * (1/kducktime))
+        endif
+        if (kval > 0) && (kval < kducktime) then
+            kenv = (kval * (1/kducktime))
+        endif
+        kidx += 1
+    od
+
+    ;printk2 kenv
+
+    xout ainput*kenv
+endop
+
+
+
 instr 1
 	aL, aR ins
     ain = aL+aR
 
-    kfader1 ctrl7 7, 41, 0, 1
+    kfader1 ctrl7 7, 16, 0, 1
 
     kstutterTrig init 0
     kstop init 0
     kreverse init 1
 
-    kstutterTrig ctrl7 7, 89, 0, 1
-    kstop ctrl7 7, 90, 0, 1
-    kreverse ctrl7 7, 91, 1, -1
+    initc7 7, 32, 0
+    kstutterTrig ctrl7 7, 32, 0, 1
+    kstutterTrig metro 0.2
+
+    kstop ctrl7 7, 48, 0, 1
+    kreverse ctrl7 7, 64, 1, -1
 
     ; Speed control
-    kfader4 ctrl7 7, 44, 0, 1
+    initc7 7, 0, 0.3
+    kfader4 ctrl7 7, 0, 0, 1
     ; Speed modifier
-    kfader5 ctrl7 7, 45, 1, 11
+    initc7 7, 1, 0.1
+    kfader5 ctrl7 7, 1, 1, 11
     kspeedMod = int(kfader5)
 
     ; Speed quantisation modes:
@@ -90,8 +121,9 @@ instr 1
     kenv linseg 0, 0.001, 1
     ain *= kenv
 
-    kwindowSize ctrl7 7, 43, 0.003, 1    
-    kwindowSize port kwindowSize, 0.1
+    initc7 7, 17, 0.5
+    kwindowSize ctrl7 7, 17, 0.001, 0.08    
+    kwindowSize port kwindowSize, 0.01
     ;kwindowSize = 0.05
 
     ktranspose = p4
@@ -101,25 +133,29 @@ instr 1
     ktempoDivisions[] fillarray 0.125, 0.1666666675, 0.25, 0.33333333333, 0.5, 0.6666666667, 0.75, 1
     kspeedModifiers[] fillarray 0.25, 0.333333333, 0.5, 0.6666666667, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3
     kmetro metro 0.2
-    krandIdx trandom kmetro, 0, 8.99
-    kmetro2 metro 3
-    krandIdx2 = 5;trandom kmetro2, 0, 13.99
+    ;ktempo_randIdx = 7
+    ktempo_randIdx trandom kmetro, 0, 8.99
 
-    ksizeDivision = ktempoDivisions[krandIdx]
-    ktempoDivision = kspeedModifiers[krandIdx2] 
+    kmetro2 metro 3
+    kspeed_randIdx = 5;trandom kmetro2, 0, 13.99
+
+    ksizeDivision = ktempoDivisions[ktempo_randIdx]
+    ktempoDivision = kspeedModifiers[kspeed_randIdx] 
 
     kwindowSize *= ksizeDivision
     kspeed *= ktempoDivision
 
-    kwindowSizeRaw = kwindowSize*(giBufferLen-1)
+    kwindowSizeRaw = (kwindowSize*(giBufferLen-1))-ksmps
+    ;printk2 kwindowSizeRaw
 
     kidx = 0
     while (kidx < ksmps) do
         kval = ain[kidx]
         if krecIdx < giBufferLen-1 then 
-            tablew kval, krecIdx, giForwardsBuff, 0
-            tablegpw giForwardsBuff
             krecIdx += 1
+            tablew kval, krecIdx, giForwardsBuff, 0
+            ;tablegpw giForwardsBuff
+            ;krecIdx += 1
         endif
         ; Loopmode stutter playback
         if krecIdx >= kwindowSizeRaw && kdelayMode == 1 then 
@@ -135,7 +171,7 @@ instr 1
 
     krate = 1 / (giBufferLen / sr) 
     andx phasor (a(krate) / a(kwindowSize)) * a(kspeed)
-    andx *= a(kwindowSizeRaw)
+    andxRaw = andx * a(kwindowSizeRaw)
 
     if trigger(kstop, 0.5, 0) == 1 then 
         kstopPlayback += 1
@@ -143,10 +179,15 @@ instr 1
     endif
 
     if kstartPlayback == 1 && kstopPlayback == 0 then 
-        aout table3 andx, giForwardsBuff, 0, ksmps, 1
+ ;       aout table3 andx, giForwardsBuff, 0, ksmps, 1
+        aout lposcil3 1, kspeed, 0, kwindowSizeRaw, giForwardsBuff
     else
         aout = 0
     endif 
+
+    kducktime = 0.1 ; 0 - 1 
+    ; Duck loop points
+    aout ducking aout, andx, kducktime
 
     a0 = aout;0
     outs aout, aout
@@ -369,11 +410,12 @@ endin
 </CsInstruments>
 <CsScore>
 i1 0 86400 1
-
+;i10 0 86400
+e
 i1 0 86400 1.5
 i1 0 86400 2
 
-i10 0 86400
+
 
 ;i2 0 86400
 </CsScore>
