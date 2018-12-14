@@ -59,7 +59,7 @@ instr 1
 
     initc7 7, 32, 0
     kstutterTrig ctrl7 7, 32, 0, 1
-    kstutterTrig metro 0.2
+    ;kstutterTrig metro 0.8
 
     kstop ctrl7 7, 48, 0, 1
     kreverse ctrl7 7, 64, 1, -1
@@ -122,9 +122,10 @@ instr 1
     ain *= kenv
 
     initc7 7, 17, 0.5
-    kwindowSize ctrl7 7, 17, 0.001, 0.08    
+    kwindowSize ctrl7 7, 17, 0.001, 0.2    
     kwindowSize port kwindowSize, 0.01
-    ;kwindowSize = 0.05
+   ; printk2 kwindowSize
+   ; kwindowSize = 0.3
 
     ktranspose = p4
     kspeed *= ktranspose
@@ -132,12 +133,13 @@ instr 1
 
     ktempoDivisions[] fillarray 0.125, 0.1666666675, 0.25, 0.33333333333, 0.5, 0.6666666667, 0.75, 1
     kspeedModifiers[] fillarray 0.25, 0.333333333, 0.5, 0.6666666667, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3
-    kmetro metro 0.2
-    ;ktempo_randIdx = 7
-    ktempo_randIdx trandom kmetro, 0, 8.99
+    kmetro metro 2
+    ktempo_randIdx = 7
+    ;ktempo_randIdx trandom kmetro, 0, 8.99
 
     kmetro2 metro 3
-    kspeed_randIdx = 5;trandom kmetro2, 0, 13.99
+    kspeed_randIdx = 5
+    ;kspeed_randIdx trandom kmetro2, 0, 13.99
 
     ksizeDivision = ktempoDivisions[ktempo_randIdx]
     ktempoDivision = kspeedModifiers[kspeed_randIdx] 
@@ -179,13 +181,17 @@ instr 1
     endif
 
     if kstartPlayback == 1 && kstopPlayback == 0 then 
- ;       aout table3 andx, giForwardsBuff, 0, ksmps, 1
-        aout lposcil3 1, kspeed, 0, kwindowSizeRaw, giForwardsBuff
+        aout table3 andxRaw, giForwardsBuff, 0, ksmps, 1
+;        aout lposcil3 1, kspeed, 0, kwindowSizeRaw, giForwardsBuff
     else
         aout = 0
     endif 
 
-    kducktime = 0.1 ; 0 - 1 
+    initc7 7, 18, 0.1
+    kducktime ctrl7 7, 18, 0.001, 0.5
+    printk2 kducktime
+
+    ;kducktime = 0.1 ; 0 - 1 
     ; Duck loop points
     aout ducking aout, andx, kducktime
 
