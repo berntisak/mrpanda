@@ -1,3 +1,23 @@
+<Cabbage>
+form size(350,275), text("FreezeStutter"), guirefresh(32), pluginid("fspd")
+button    bounds( 55, 15, 60, 25), fontcolour:0(50,50,50), fontcolour:1(255,205,205), colour:0(10,0,0), colour:1(150,0,0), text("Stutter","Stutter"), channel("Stutter"), latched(1)
+button    bounds( 145, 15, 60, 25), fontcolour:0(50,50,50), fontcolour:1(255,205,205), colour:0(10,0,0), colour:1(150,0,0), text("RandPitch","RandPitch"), channel("RandPitch"), latched(1)
+button    bounds( 235, 15, 60, 25), fontcolour:0(50,50,50), fontcolour:1(255,205,205), colour:0(10,0,0), colour:1(150,0,0), text("RandSize","RandSize"), channel("RandSpeed"), latched(1)
+
+
+rslider   bounds( 15, 70, 80, 80), range(0.001, 0.3,0.1), channel("LoopSize"), text("Loop size")
+rslider   bounds( 95, 70, 80, 80), range(0.0001, 1.0,0.01), channel("Ducktime"), text("Ducktime")
+rslider   bounds( 180, 70, 80, 80), range(0.0, 1.0,0.35), channel("Speed"), text("Speed")
+rslider   bounds( 265, 70, 80, 80), range(1.0, 11.0,1), channel("SpeedMod"), text("SpeedMod")
+
+
+rslider   bounds( 95, 160, 80, 80), range(0.5, 10,2), channel("RandSpeedSpeed"), text("Random Pitch Freq")
+rslider   bounds( 180, 160, 80, 80), range(0.5, 10,3), channel("RandTempoSpeed"), text("Random Size Freq")
+
+
+
+</Cabbage>
+
 <CsoundSynthesizer>
 <CsOptions>
 -odac -iadc -b128 -B512 -Ma ;-m0d -Ma
@@ -156,10 +176,10 @@ instr 1
     ; Start the Ringbuffererer
     kringIdx Ringbufferer ain, giRingBuff
 
-    ;kstutter = gkStutter
-    kstutter ctrl7 1, 20, 0, 1
-    initc7 1, 20, 0
-    printk2 kstutter
+    ;kstutter ctrl7 1, 20, 0, 1
+    ;initc7 1, 20, 0
+    ;printk2 kstutter
+    kstutter chnget "Stutter"
 
     ; After hitting stutter, do the following:
     if trigger(kstutter, 0.5, 0) == 1 then 
@@ -211,10 +231,12 @@ instr 1
     ;printk2 kplay
     ;kstartRec = kplay == 1 ? 0 : kstartRec
 
-    kloopSize ctrl7 1, 10, 0.001, 0.5   
-    initc7 1, 10, 0.1
+    ;kloopSize ctrl7 1, 10, 0.001, 0.5   
+    ;initc7 1, 10, 0.1
+    kloopSize chnget "LoopSize"
 
-    kducktime ctrl7 1, 74, 0.001, 1
+    ;kducktime ctrl7 1, 74, 0.001, 1
+    kducktime chnget "Ducktime"
     kspeed = 1
     ktranspose = 1
     koffset = 0.5    
@@ -253,22 +275,28 @@ instr 2
     kreverse ctrl7 1, 21, 1, -1
 
     ; Speed control
-    initc7 1, 71, 0.3
-    kspeedCtrl ctrl7 1, 71, 0, 1
+    ;initc7 1, 71, 0.3
+    ;kspeedCtrl ctrl7 1, 71, 0, 1
+    kspeedCtrl chnget "Speed"
 
     ; Speed modifier
-    initc7 1, 76, 0.1
-    kspeedMod ctrl7 1, 76, 1, 11
+    ;initc7 1, 76, 0.1
+    ;kspeedMod ctrl7 1, 76, 1, 11
+    kspeedMod chnget "SpeedMod"
     kspeedMod = int(kspeedMod)
 
     ; Random tempo
-    krandTempoOnOff ctrl7 1, 22, 0, 1
-    krandTempoSpeed ctrl7 1, 18, 0.5, 10
+    ;krandTempoOnOff ctrl7 1, 22, 0, 1
+    krandTempoOnOff chnget "RandSize"
+    ;krandTempoSpeed ctrl7 1, 18, 0.5, 10
+    krandTempoSpeed chnget "RandSizeFreq"
     krandTempoSpeed *= krandTempoOnOff
 
     ; Random speed
-    krandSpeedOnOff ctrl7 1, 23, 0, 1
-    krandSpeedSpeed ctrl7 1, 19, 0.5, 10
+    ;krandSpeedOnOff ctrl7 1, 23, 0, 1
+    krandSpeedOnOff chnget "RandPitch"
+    ;krandSpeedSpeed ctrl7 1, 19, 0.5, 10
+    krandSpeedSpeed chnget "RandPitchFreq"
     krandSpeedSpeed *= krandSpeedOnOff
 
     ; Speed quantisation modes:
