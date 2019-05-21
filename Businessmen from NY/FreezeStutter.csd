@@ -1,6 +1,6 @@
 <CsoundSynthesizer>
 <CsOptions>
--odac -iadc -b128 -B512 ;-m0d -Ma
+-odac -iadc -b128 -B512 -Ma ;-m0d -Ma
 </CsOptions>
 <CsInstruments>
 sr      = 44100
@@ -9,7 +9,7 @@ ksmps  	= 16
 nchnls 	= 2
 
     giBufferLen             = 131072 ; Almost 3 seconds
-    giRingBuff              ftgen   0, 0, giBufferLen, 2, 0                             ; create empty buffer for live follow mode
+    giRingBuff              ftgen   0, 0, giBufferLen, 2, 0           
     giRecBuff               ftgen   0, 0, giBufferLen, 2, 0
     giFreezeBuff            ftgen   0, 0, (giBufferLen*2), 2, 0
 
@@ -35,8 +35,6 @@ opcode ducking, a, aak
         endif
         kidx += 1
     od
-
-    ;printk2 kenv
 
     xout ainput*kenv
 endop
@@ -193,7 +191,6 @@ instr 1
             ktoArr[kcopyToIdx] = kfromArr[kcopyFromIdx]
             kcopyToIdx -= 1
             kcopyFromIdx = kcopyFromIdx > 0 ? kcopyFromIdx-1 : giBufferLen-1
- ;           printk2 kcopyFromIdx
         od
         copya2ftab ktoArr, giFreezeBuff
         copya2ftab kfromArr, giTmpBuff
@@ -212,16 +209,19 @@ instr 1
     printk2 kplay
     kstartRec = kplay == 1 ? 0 : kstartRec
 
-    kloopSize = 0.15
-    kloopSize oscil 0.1, 0.05
-    kloopSize += 0.101
+    kloopSize init 0.15
+    ;kloopSize oscil 0.1, 0.05
+    ;kloopSize += 0.101
+    kloopSize ctrl7 1, 77, 0.001, 1
+    printk2 kloopSize
+
     kducktime = 1
     kspeed = 1
     ktranspose = 1
     koffset = 0.5 ;0 ;((giBufferLen-1)  - ksmps) - (kloopSize/2)    
 ;   ibuffer, kplaying, koffset, kloopSize, kducktime, kspeed, ktranspose xin
     a1 BufferPlay giFreezeBuff, kplay, koffset, kloopSize, kducktime, kspeed, ktranspose
-    a2 BufferPlay giFreezeBuff, kplay, koffset-0.5, kloopSize, kducktime, kspeed, ktranspose
+   ; a2 BufferPlay giFreezeBuff, kplay, koffset-0.5, kloopSize, kducktime, kspeed, ktranspose
  
  /*
     a5 BufferPlay giFreezeBuff, kplay, koffset, kloopSize, kducktime, kspeed*2, ktranspose
@@ -230,7 +230,7 @@ instr 1
  ;   a2 BufferPlay giRecBuff, kplay, 0, kloopSize, kducktime, kspeed, ktranspose
  ;   a3 BufferPlay giTmpBuff, kplay, 0, kloopSize, kducktime, kspeed, ktranspose
 */
-    outs a1,a2;a1+a5+a7,a1+a6+a7
+    outs a1,a1;a1+a5+a7,a1+a6+a7
 
 endin
 
@@ -254,13 +254,20 @@ ival      table     indx, p4
           loop_lt   indx, 1, 64, loop
   endin
 
+instr 4 
+
+a1,a2 ins
+
+outs a1*0.3, a2*0.3
+endin
 
 </CsInstruments>
 <CsScore>
 f 0 z
-i1 0 86400
-i2 3 1
-;i3 4 1 
+i4 0 86400 
+i1 3 86400
+;i2 3 1
+
 
 ;i2 5 86400
 
